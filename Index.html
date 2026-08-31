@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fashion Site Builder">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRmFzaGlvbiBTaXRlIEJ1aWxkZXIiLCJzaG9ydF9uYW1lIjoiRlNCIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwYTBhMGEiLCJ0aGVtZV9jb2xvciI6IiMwYTBhMGEifQ==">
+<title>Fashion Site Builder</title>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface-raised: #1a1a1a;
+  --border: #2a2a2a;
+  --text: #e8e4df;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #666666;
+  --text-quaternary: #444444;
+  --accent: #c9a96e;
+  --accent-soft: rgba(201,169,110,0.15);
+  --positive: #7cb97a;
+  --warning: #d4a76a;
+  --danger: #c97a7a;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  --t-fast: 150ms;
+  --t-normal: 250ms;
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); overscroll-behavior-y: none; }
+body { padding-bottom: 100px; }
+
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px 12px;
+}
+.app-header h1 { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: 0.02em; }
+.app-header p { margin: 4px 0 0; font-size: 13px; color: var(--text-tertiary); }
+
+.tab-bar {
+  display: flex; gap: 0;
+  overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky; top: 68px; z-index: 99;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 0 0 auto; padding: 14px 18px;
+  background: none; border: none; color: var(--text-tertiary);
+  font-size: 14px; font-weight: 400; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--t-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
+.panel { display: none; padding: 16px 16px 32px; animation: fadeIn 0.3s var(--ease-out); }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 15px; font-weight: 500;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+.card-body strong { color: var(--text); font-weight: 500; }
+
+.badge {
+  display: inline-block; padding: 3px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.badge-rec { background: rgba(124,185,122,0.15); color: var(--positive); }
+.badge-alt { background: rgba(160,160,160,0.12); color: var(--text-tertiary); }
+.badge-warn { background: rgba(212,167,106,0.15); color: var(--warning); }
+
+.progress-wrap { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.progress-bar { flex: 1; height: 6px; background: var(--surface-raised); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width var(--t-normal) var(--ease-out); }
+.progress-text { font-size: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+
+.check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 8px 0; font-size: 14px; color: var(--text-secondary);
+  cursor: pointer; padding: 6px; border-radius: 8px;
+  transition: background var(--t-fast);
+}
+.check-row:active { background: var(--surface-raised); }
+.check-row input {
+  width: 18px; height: 18px; margin-top: 2px;
+  accent-color: var(--accent); flex-shrink: 0;
+}
+.check-row.done { color: var(--text-quaternary); text-decoration: line-through; }
+.check-row.done input { opacity: 0.4; }
+
+.prompt-box {
+  background: var(--surface-raised);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 10px;
+  position: relative;
+}
+.prompt-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding-right: 60px;
+}
+.copy-btn {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 12px;
+  font-size: 12px; font-weight: 500; color: var(--text-tertiary);
+  cursor: pointer; transition: all var(--t-fast);
+}
+.copy-btn:active { transform: scale(0.96); }
+.copy-btn.copied { color: var(--positive); border-color: var(--positive); }
+
+.tip {
+  border-left: 3px solid var(--accent);
+  padding-left: 14px; margin: 14px 0;
+  font-size: 14px; color: var(--text-secondary);
+}
+
+.vibe-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.vibe-item:last-child { border-bottom: none; }
+.vibe-label {
+  font-size: 11px; color: var(--text-quaternary);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 4px; font-weight: 500;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 400px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.section-head {
+  font-size: 18px; font-weight: 500;
+  margin: 24px 0 14px;
+  color: var(--text);
+}
+
+.avoid-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; font-size: 14px; color: var(--text-secondary);
+}
+.avoid-row svg { flex-shrink: 0; }
+
+.bottom-cta {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(10,10,10,0.9);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px 24px;
+  display: flex; gap: 10px;
+  z-index: 200;
+}
+.cta-btn {
+  flex: 1; padding: 14px;
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: 10px;
+  font-size: 15px; font-weight: 500;
+  cursor: pointer; text-align: center;
+  transition: opacity var(--t-fast);
+}
+.cta-btn.secondary {
+  background: var(--surface-raised); color: var(--text);
+  border: 1px solid var(--border);
+}
+.cta-btn:active { opacity: 0.8; }
+
+.toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: var(--surface-raised); border: 1px solid var(--border);
+  color: var(--text); padding: 12px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: all var(--t-normal) var(--ease-out);
+  z-index: 300;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>Fashion Site Builder</h1>
+  <p>Your daily learning program</p>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab(0)">Platform</button>
+  <button class="tab-btn" onclick="switchTab(1)">Learn</button>
+  <button class="tab-btn" onclick="switchTab(2)">Prompts</button>
+  <button class="tab-btn" onclick="switchTab(3)">Photos</button>
+  <button class="tab-btn" onclick="switchTab(4)">Vibe</button>
+</div>
+
+<div class="panel active" id="panel-0">
+  <div class="card">
+    <div class="card-title"><span class="badge badge-rec">Recommended</span> Webflow</div>
+    <div class="card-body">
+      Best for editorial, art-directed fashion brands. You control every pixel, animation, and scroll interaction. The early All Saints website felt like a dark room you walked into — Webflow can do that. Steeper learning curve than Shopify, but you will actually <em>learn</em> how websites work.
+      <div style="margin-top:10px; font-size:13px; color:var(--text-tertiary);">Best for: lookbook sites, storytelling, custom interactions, under ~50 SKUs</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="badge badge-alt">Alternative</span> Shopify</div>
+    <div class="card-body">
+      Better when you need robust checkout, inventory, and shipping out of the box. The design is more templated, but you can customize themes with Liquid code. Easier to scale when you have many products or variants.
+      <div style="margin-top:10px; font-size:13px; color:var(--text-tertiary);">Best for: higher SKU counts, complex shipping, rapid scaling</div>
+    </div>
+  </div>
+  <div class="tip">
+    <strong>Recommendation:</strong> Start with <strong>Webflow</strong> + Webflow Ecommerce. For a premium, slow-fashion brand with few pieces, the editorial control matters more than backend features. You can always migrate to Shopify later if you scale past ~30 products.
+  </div>
+</div>
+
+<div class="panel" id="panel-1">
+  <div class="section-head">6-Week Sprint</div>
+
+  <div class="card" data-mod="1">
+    <div class="card-title">Week 1: Webflow basics + structure</div>
+    <div class="card-body">Learn the box model, sections/containers/grids, and the class system. Build a simple landing page.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-1"></div></div>
+      <span class="progress-text" id="progtxt-1">0/4</span>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="check-row"><input type="checkbox" data-mod="1" onchange="toggleCheck(this)"> Complete Webflow 101 crash course (free, ~2 hrs)</label>
+      <label class="check-row"><input type="checkbox" data-mod="1" onchange="toggleCheck(this)"> Build a 3-section practice page (hero, text, footer)</label>
+      <label class="check-row"><input type="checkbox" data-mod="1" onchange="toggleCheck(this)"> Understand classes vs combo classes vs global styles</label>
+      <label class="check-row"><input type="checkbox" data-mod="1" onchange="toggleCheck(this)"> Set up a CMS collection for "lookbook items"</label>
+    </div>
+  </div>
+
+  <div class="card" data-mod="2">
+    <div class="card-title">Week 2: Typography & spacing</div>
+    <div class="card-body">Master the visual rhythm. Oversized serif headlines, generous whitespace, tight image grids.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-2"></div></div>
+      <span class="progress-text" id="progtxt-2">0/4</span>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="check-row"><input type="checkbox" data-mod="2" onchange="toggleCheck(this)"> Set up a type scale (display / body / caption / micro)</label>
+      <label class="check-row"><input type="checkbox" data-mod="2" onchange="toggleCheck(this)"> Practice with a serif + sans-serif pairing</label>
+      <label class="check-row"><input type="checkbox" data-mod="2" onchange="toggleCheck(this)"> Build a full-width hero with overlaid type</label>
+      <label class="check-row"><input type="checkbox" data-mod="2" onchange="toggleCheck(this)"> Create a tight image grid (2-col, 3-col, masonry)</label>
+    </div>
+  </div>
+
+  <div class="card" data-mod="3">
+    <div class="card-title">Week 3: Interactions & motion</div>
+    <div class="card-body">Subtle scroll animations, hover states, page transitions. Motion should feel heavy and deliberate.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-3"></div></div>
+      <span class="progress-text" id="progtxt-3">0/4</span>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="check-row"><input type="checkbox" data-mod="3" onchange="toggleCheck(this)"> Add scroll-into-view fade-ups</label>
+      <label class="check-row"><input type="checkbox" data-mod="3" onchange="toggleCheck(this)"> Create image hover zoom + opacity shifts</label>
+      <label class="check-row"><input type="checkbox" data-mod="3" onchange="toggleCheck(this)"> Build a full-screen menu overlay</label>
+      <label class="check-row"><input type="checkbox" data-mod="3" onchange="toggleCheck(this)"> Add a custom page-load sequence</label>
+    </div>
+  </div>
+
+  <div class="card" data-mod="4">
+    <div class="card-title">Week 4: Ecommerce + product pages</div>
+    <div class="card-body">Connect Webflow Ecommerce. Build product templates, cart, and checkout. Make it feel like a gallery.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-4"></div></div>
+      <span class="progress-text" id="progtxt-4">0/4</span>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="check-row"><input type="checkbox" data-mod="4" onchange="toggleCheck(this)"> Set up product CMS with variants (size, color)</label>
+      <label class="check-row"><input type="checkbox" data-mod="4" onchange="toggleCheck(this)"> Design a product page: big image left, details right</label>
+      <label class="check-row"><input type="checkbox" data-mod="4" onchange="toggleCheck(this)"> Style the cart drawer to match brand</label>
+      <label class="check-row"><input type="checkbox" data-mod="4" onchange="toggleCheck(this)"> Connect Stripe/PayPal and test a transaction</label>
+    </div>
+  </div>
+
+  <div class="card" data-mod="5">
+    <div class="card-title">Week 5: Responsive + performance</div>
+    <div class="card-body">Make it work on mobile without losing the mood. Optimize images, lazy loading, Core Web Vitals.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-5"></div></div>
+      <span class="progress-text" id="progtxt-5">0/3</span>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="check-row"><input type="checkbox" data-mod="5" onchange="toggleCheck(this)"> Audit and fix mobile layout breaks</label>
+      <label class="check-row"><input type="checkbox" data-mod="5" onchange="toggleCheck(this)"> Compress all images to WebP, set srcsets</label>
+      <label class="check-row"><input type="checkbox" data-mod="5" onchange="toggleCheck(this)"> Run Lighthouse audit, fix critical issues</label>
+    </div>
+  </div>
+
+  <div class="card" data-mod="6">
+    <div class="card-title">Week 6: Launch polish</div>
+    <div class="card-body">Analytics, SEO basics, email capture, and a soft-launch checklist. Get the site live on a custom domain.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-6"></div></div>
+      <span class="progress-text" id="progtxt-6">0/4</span>
+    </div>
+    <div style="margin-top:6px;">
+      <label class="check-row"><input type="checkbox" data-mod="6" onchange="toggleCheck(this)"> Add Google Analytics 4 + Search Console</label>
+      <label class="check-row"><input type="checkbox" data-mod="6" onchange="toggleCheck(this)"> Set up a minimal email capture (Klaviyo or Mailchimp)</label>
+      <label class="check-row"><input type="checkbox" data-mod="6" onchange="toggleCheck(this)"> Write meta titles/descriptions for every page</label>
+      <label class="check-row"><input type="checkbox" data-mod="6" onchange="toggleCheck(this)"> Connect custom domain and publish</label>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-2">
+  <div class="section-head">AI Tutor Prompts</div>
+  <div class="card-body" style="margin-bottom:14px; font-size:14px; color:var(--text-secondary);">Copy these into Claude, ChatGPT, or Kimi. Tap the Copy button.</div>
+
+  <div class="card">
+    <div class="card-title">Webflow fundamentals tutor</div>
+    <div class="prompt-box">
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <div class="prompt-text">I am learning Webflow to build a premium fashion e-commerce website inspired by early All Saints (dark, editorial, minimalist). I have never built a website before. Teach me Webflow like a patient tutor. Start with the absolute basics: what is the box model, how do sections/containers/grids work, and why do classes matter? Give me one small exercise after each concept, and wait for me to confirm I understand before moving on. Do not use jargon without explaining it.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Typography & visual hierarchy coach</div>
+    <div class="prompt-box">
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <div class="prompt-text">I need to design the typography for a dark, premium fashion website. The vibe is early All Saints: confident, understated, slightly raw. I want to use a serif for headlines and a clean sans-serif for body text. Walk me through how to choose font pairings, set a type scale, and control line-height and letter-spacing in Webflow. Show me specific values (font sizes, weights, line-heights) that would work for this mood. Give me before/after comparisons.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Interaction design mentor</div>
+    <div class="prompt-box">
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <div class="prompt-text">Teach me how to add subtle, premium interactions to my Webflow fashion site. I want scroll-triggered fade-ups, image hover effects, and a full-screen navigation overlay. The motion should feel heavy and deliberate — not bouncy or playful. For each interaction, explain the Webflow settings step-by-step (which trigger, which animation, duration, easing). Start with the simplest one and build up.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Product page critique partner</div>
+    <div class="prompt-box">
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <div class="prompt-text">I will share a screenshot or description of my product page design. Act as a senior UX designer who specializes in luxury fashion e-commerce. Critique it specifically for: (1) whether it supports a high price point, (2) if the information hierarchy helps or hurts conversion, (3) whether the imagery feels editorial or generic, and (4) what specific Webflow changes would improve it. Be direct but constructive.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Custom CSS generator</div>
+    <div class="prompt-box">
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <div class="prompt-text">I need custom CSS for my Webflow site to achieve a specific look: [describe what you want, e.g., "a full-bleed video background with dark overlay and centered white serif text"]. Write the CSS code block that I can paste into Webflow's custom code embed. Explain what each property does so I can tweak it myself. Ensure it is responsive and uses safe, widely-supported properties only.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bug fix assistant</div>
+    <div class="prompt-box">
+      <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+      <div class="prompt-text">My Webflow site has a problem: [describe the issue]. Here is my read-only link: [paste link]. Help me diagnose what is causing this and give me the exact steps to fix it. If you need more information, ask me one specific question at a time. Do not guess — if you are unsure, say so and tell me what to check.</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-3">
+  <div class="section-head">Photo Strategy</div>
+
+  <div class="card">
+    <div class="card-title"><span class="badge badge-rec">Best</span> Commission a shoot</div>
+    <div class="card-body">
+      For a premium brand at All Saints price points, original photography is non-negotiable. Stock photos destroy trust at this level.
+      <div style="margin-top:10px;">
+        <div class="vibe-item"><div class="vibe-label">Budget option</div>Find a local fashion photography student or emerging photographer. Trade clothes for images. You need: 1 hero look, 3–4 detail shots, 1 atmospheric environment shot.</div>
+        <div class="vibe-item"><div class="vibe-label">Mid option</div>Hire a photographer + model for a half day. Focus on natural light, minimal retouching. All Saints early imagery was often shot in raw warehouses or against distressed walls.</div>
+        <div class="vibe-item"><div class="vibe-label">DIY starter</div>If budget is truly zero, shoot flat lays on a dark concrete or raw wood surface using natural window light and a smartphone. Keep it consistent.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="badge badge-warn">Temporary</span> Curated stock</div>
+    <div class="card-body">
+      If you must use stock while waiting for a shoot, use it only for atmospheric/background imagery — never for product.
+      <div style="margin-top:8px; font-size:14px; color:var(--text-secondary);">
+        • Unsplash (search: "raw portrait," "textured fabric," "industrial interior")<br>
+        • Pexels (filter by dark/moody)<br>
+        • Stocksy (paid, but editorial and authentic feeling)
+      </div>
+      <div class="tip" style="margin-top:10px;">Rule: if a customer could find the same image on another brand's site, do not use it.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Shot list for first collection</div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <strong style="color:var(--text);">Product shots</strong><br>
+          • Front flat lay<br>
+          • Back flat lay<br>
+          • Detail close-up (stitching, hardware)<br>
+          • Fabric texture macro<br>
+          • On-model front full<br>
+          • On-model back full
+        </div>
+        <div>
+          <strong style="color:var(--text);">Editorial / mood</strong><br>
+          • 1 hero image (model + environment)<br>
+          • 2–3 atmospheric detail shots<br>
+          • 1 behind-the-scenes / process shot<br>
+          • 1 packaging / unboxing shot
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-4">
+  <div class="section-head">All Saints Vibe Guide</div>
+  <div class="card-body" style="margin-bottom:14px; font-size:14px; color:var(--text-secondary);">Use this as a shared reference between you and your designer.</div>
+
+  <div class="card">
+    <div class="card-title">Visual language</div>
+    <div style="margin-top:8px;">
+      <div class="vibe-item"><div class="vibe-label">Color palette</div>Near-black backgrounds (#0a0a0a, #111), warm off-white text (#e8e4df), muted metallics (brass, gunmetal) as accents. Avoid pure white and pure black.</div>
+      <div class="vibe-item"><div class="vibe-label">Imagery</div>Low-key lighting, visible texture, slight grain. Models look like they have somewhere to be, not like they are posing. Environments feel found, not designed.</div>
+      <div class="vibe-item"><div class="vibe-label">Typography</div>Large, confident serif headlines (Tiempos, Canela, Lyon). Small, functional sans-serif for navigation and product details. Generous line-height on body.</div>
+      <div class="vibe-item"><div class="vibe-label">Layout</div>Asymmetric grids, full-bleed images, lots of negative space. Information is revealed slowly — no clutter, no urgency.</div>
+      <div class="vibe-item"><div class="vibe-label">Motion</div>Slow, heavy transitions. Page loads feel like a curtain rising. Hover states are subtle — a slight darkening, a slow zoom, never a bounce.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">What to avoid</div>
+    <div style="margin-top:8px;">
+      <div class="avoid-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.9542 4.77253C18.3056 4.42106 18.8761 4.42106 19.2276 4.77253C19.579 5.12401 19.579 5.69452 19.2276 6.04597L13.2735 12.0001L19.2276 17.9542C19.5791 18.3056 19.5791 18.8761 19.2276 19.2276C18.8761 19.5791 18.3056 19.5791 17.9542 19.2276L12.0001 13.2735L6.04595 19.2276C5.69451 19.5791 5.12399 19.579 4.77252 19.2276C4.42104 18.8761 4.42104 18.3056 4.77252 17.9542L10.7266 12.0001L4.77252 6.045" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
+        Bright, saturated colors
+      </div>
+      <div class="avoid-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.9542 4.77253C18.3056 4.42106 18.8761 4.42106 19.2276 4.77253C19.579 5.12401 19.579 5.69452 19.2276 6.04597L13.2735 12.0001L19.2276 17.9542C19.5791 18.3056 19.5791 18.8761 19.2276 19.2276C18.8761 19.5791 18.3056 19.5791 17.9542 19.2276L12.0001 13.2735L6.04595 19.2276C5.69451 19.5791 5.12399 19.579 4.77252 19.2276C4.42104 18.8761 4.42104 18.3056 4.77252 17.9542L10.7266 12.0001L4.77252 6.045" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
+        Playful animations (bounces, elastic snaps)
+      </div>
+      <div class="avoid-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.9542 4.77253C18.3056 4.42106 18.8761 4.42106 19.2276 4.77253C19.579 5.12401 19.579 5.69452 19.2276 6.04597L13.2735 12.0001L19.2276 17.9542C19.5791 18.3056 19.5791 18.8761 19.2276 19.2276C18.8761 19.5791 18.3056 19.5791 17.9542 19.2276L12.0001 13.2735L6.04595 19.2276C5.69451 19.5791 5.12399 19.579 4.77252 19.2276C4.42104 18.8761 4.42104 18.3056 4.77252 17.9542L10.7266 12.0001L4.77252 6.045" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
+        Rounded, friendly UI (big pill buttons, soft shadows)
+      </div>
+      <div class="avoid-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.9542 4.77253C18.3056 4.42106 18.8761 4.42106 19.2276 4.77253C19.579 5.12401 19.579 5.69452 19.2276 6.04597L13.2735 12.0001L19.2276 17.9542C19.5791 18.3056 19.5791 18.8761 19.2276 19.2276C18.8761 19.5791 18.3056 19.5791 17.9542 19.2276L12.0001 13.2735L6.04595 19.2276C5.69451 19.5791 5.12399 19.579 4.77252 19.2276C4.42104 18.8761 4.42104 18.3056 4.77252 17.9542L10.7266 12.0001L4.77252 6.045" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
+        Overly clean / sterile product photography
+      </div>
+      <div class="avoid-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.9542 4.77253C18.3056 4.42106 18.8761 4.42106 19.2276 4.77253C19.579 5.12401 19.579 5.69452 19.2276 6.04597L13.2735 12.0001L19.2276 17.9542C19.5791 18.3056 19.5791 18.8761 19.2276 19.2276C18.8761 19.5791 18.3056 19.5791 17.9542 19.2276L12.0001 13.2735L6.04595 19.2276C5.69451 19.5791 5.12399 19.579 4.77252 19.2276C4.42104 18.8761 4.42104 18.3056 4.77252 17.9542L10.7266 12.0001L4.77252 6.045" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
+        Sale banners, countdown timers, urgency messaging
+      </div>
+      <div class="avoid-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.9542 4.77253C18.3056 4.42106 18.8761 4.42106 19.2276 4.77253C19.579 5.12401 19.579 5.69452 19.2276 6.04597L13.2735 12.0001L19.2276 17.9542C19.5791 18.3056 19.5791 18.8761 19.2276 19.2276C18.8761 19.5791 18.3056 19.5791 17.9542 19.2276L12.0001 13.2735L6.04595 19.2276C5.69451 19.5791 5.12399 19.579 4.77252 19.2276C4.42104 18.8761 4.42104 18.3056 4.77252 17.9542L10.7266 12.0001L4.77252 6.045" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
+        Social proof carousels ("What our customers say")
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Reference sites to study</div>
+    <div class="card-body">
+      Visit these and screenshot what works. Do not copy — dissect.<br><br>
+      • <strong>All Saints</strong> (current site — study navigation and product page structure)<br>
+      • <strong>Acne Studios</strong> (editorial grid layouts, typographic confidence)<br>
+      • <strong>Our Legacy</strong> (quiet product presentation, restrained color)<br>
+      • <strong>Margaret Howell</strong> (spacious, calm, British understatement)<br>
+      • <strong>The Row</strong> (minimal navigation, image-first philosophy)
+    </div>
+  </div>
+</div>
+
+<div class="bottom-cta">
+  <button class="cta-btn secondary" onclick="resetProgress()">Reset progress</button>
+  <button class="cta-btn" onclick="window.open('https://webflow.com','_blank')">Open Webflow</button>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+  localStorage.setItem('fsb_activeTab', idx);
+}
+function toggleCheck(box) {
+  const mod = box.dataset.mod;
+  const row = box.closest('.check-row');
+  row.classList.toggle('done', box.checked);
+  saveState();
+  updateProgress(mod);
+}
+function updateProgress(mod) {
+  const card = document.querySelector('[data-mod="' + mod + '"]');
+  if (!card) return;
+  const checks = card.querySelectorAll('input[type="checkbox"]');
+  const done = Array.from(checks).filter(c => c.checked).length;
+  const total = checks.length;
+  const pct = total ? (done / total) * 100 : 0;
+  const fill = document.getElementById('prog-' + mod);
+  const txt = document.getElementById('progtxt-' + mod);
+  if (fill) fill.style.width = pct + '%';
+  if (txt) txt.textContent = done + '/' + total;
+}
+function saveState() {
+  const state = {};
+  document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+    state[box.dataset.mod + '-' + Array.from(box.parentElement.parentElement.children).indexOf(box.parentElement)] = box.checked;
+  });
+  localStorage.setItem('fsb_progress', JSON.stringify(state));
+}
+function loadState() {
+  const raw = localStorage.getItem('fsb_progress');
+  if (!raw) return;
+  try {
+    const state = JSON.parse(raw);
+    document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+      const mod = box.dataset.mod;
+      const idx = Array.from(box.parentElement.parentElement.children).indexOf(box.parentElement);
+      const key = mod + '-' + idx;
+      if (state[key]) {
+        box.checked = true;
+        box.closest('.check-row').classList.add('done');
+      }
+    });
+    [1,2,3,4,5,6].forEach(updateProgress);
+  } catch(e) {}
+  const tab = localStorage.getItem('fsb_activeTab');
+  if (tab !== null) switchTab(parseInt(tab));
+}
+function resetProgress() {
+  if (!confirm('Reset all progress?')) return;
+  localStorage.removeItem('fsb_progress');
+  document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+    box.checked = false;
+    box.closest('.check-row').classList.remove('done');
+  });
+  [1,2,3,4,5,6].forEach(updateProgress);
+}
+function copyPrompt(btn) {
+  const text = btn.nextElementSibling.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    showToast('Prompt copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Prompt copied');
+  });
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+loadState();
+</script>
+</body>
+</html>
